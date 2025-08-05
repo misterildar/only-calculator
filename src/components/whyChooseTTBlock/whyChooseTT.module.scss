@@ -1,0 +1,41 @@
+.why_choose_tt {
+  font-family: 'Nunito', sans-serif;
+  @include columnCenter();
+  padding-bottom: 64px;
+  max-width: 1600px;
+}
+
+.blocks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.block_wrapper {
+  @include boxShadow();
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px;
+  border: 1px solid #eeedff;
+  border-radius: 16px;
+  min-height: 198px;
+}
+
+.blocks > div:nth-child(3) {
+  grid-row: span 2;
+  height: 100%;
+}
+
+.title_block {
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 46px;
+  max-width: 466px;
+}
+.text {
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 32px;
+  max-width: 466px;
+}

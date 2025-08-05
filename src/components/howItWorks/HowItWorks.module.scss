@@ -1,0 +1,81 @@
+@use 'src/styles/_var.scss' as *;
+
+.section {
+  max-width: 1600px;
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+
+  font-size: 24px;
+  margin: 64px 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.heading {
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 58px;
+  text-transform: uppercase;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+}
+
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.block {
+  @include boxShadow();
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px;
+  border: 1px solid $light-purple;
+  border-radius: 16px;
+}
+
+.title_block {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+}
+
+.dot {
+  width: 24px;
+  height: 24px;
+  background-color: $blue;
+  border-radius: 4px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 46px;
+}
+
+.description {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+}

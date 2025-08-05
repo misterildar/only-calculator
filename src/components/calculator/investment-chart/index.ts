@@ -1,0 +1,1 @@
+export { SingleInvestmentChart } from './SingleInvestmentChart';

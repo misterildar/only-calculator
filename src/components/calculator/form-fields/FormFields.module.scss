@@ -1,0 +1,183 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.label {
+  @include text($color: $text-secondary);
+  position: absolute;
+  top: 6px;
+  left: 24px;
+  z-index: 1;
+}
+
+.required {
+  color: $red;
+}
+
+.input {
+  @include text();
+  text-align: start;
+  padding: 47px 24px 10px;
+  height: 91px;
+  border: 2px solid $purple-gray;
+  border-radius: 16px;
+  transition: border-color 0.3s ease;
+
+  &:hover:not(:focus) {
+    border-color: $light-purple;
+    box-shadow: 0px 0px 0px 2px rgba(205, 203, 255, 1);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $black;
+  }
+
+  &::placeholder {
+    color: $purple-gray;
+  }
+
+  &.inputError {
+    border-color: $red;
+  }
+}
+
+.error {
+  color: $red;
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+}
+
+.dropdownContainer {
+  position: relative;
+}
+
+.dropdownTrigger {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 100%;
+  background-color: $white;
+
+  &:hover {
+    border-color: $light-purple;
+    box-shadow: 0px 0px 0px 2px rgba(205, 203, 255, 1);
+  }
+}
+
+.selectedText {
+  @include text();
+}
+
+.placeholderText {
+  color: $purple-gray;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: $white;
+  border: 2px solid $purple-gray;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.dropdownOption {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  background-color: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  @include text();
+
+  &:hover {
+    background-color: $light-purple;
+  }
+
+  &:focus {
+    background-color: $light-purple;
+    outline: none;
+  }
+
+  &.selected {
+    background-color: $light-purple;
+  }
+}
+
+.sliderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sliderLabel {
+  @include text($color: $text-secondary);
+}
+
+.sliderContainer {
+  position: relative;
+}
+
+.slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: $purple-gray;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: $blue;
+    cursor: pointer;
+    border: 3px solid $white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: $blue;
+    cursor: pointer;
+    border: 3px solid $white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.sliderLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  @include text($size: 18px, $weight: 400);
+}
+
+.disclaimer {
+  @include text($size: 18px, $weight: 500);
+  color: $t-gray;
+  background: $pink-light;
+  padding: 1rem;
+  border-radius: 8px;
+  line-height: 1.4;
+
+  strong {
+    color: $black;
+  }
+}

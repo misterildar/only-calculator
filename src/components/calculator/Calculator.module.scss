@@ -1,0 +1,31 @@
+.section {
+  width: 100%;
+  background-color: $blue;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 64px 64px;
+}
+
+.separator {
+  display: flex;
+  background-color: $white;
+  max-width: 1600px;
+  width: 100%;
+  border-radius: 16px;
+}
+
+.container {
+  display: flex;
+  margin: 0 auto;
+  padding: 64px 0;
+}
+
+.description {
+  max-width: 335px;
+  text-align: center;
+}
+
+.title {
+  color: $white;
+}

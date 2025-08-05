@@ -1,0 +1,75 @@
+.button {
+  border: none;
+  border-radius: 8px;
+  height: 90px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  padding: 16px;
+
+  &:hover:not(:disabled) {
+    font-size: 40px;
+  }
+}
+
+.primary {
+  background: $blue;
+  color: $white;
+}
+
+.secondary {
+  background: $white;
+  color: $blue;
+  border: 2px solid $blue;
+}
+
+.calculator {
+  background: $indigo-color;
+  color: $white;
+}
+
+.transparent {
+  background: transparent;
+  color: $blue;
+  border: 2px solid $blue;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.loading {
+  cursor: wait;
+
+  .loadingText {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::after {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

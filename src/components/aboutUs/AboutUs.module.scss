@@ -1,0 +1,45 @@
+.aboutContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 1600px;
+  width: 100%;
+  min-height: 512px;
+  background-color: #ffffff;
+  font-size: 24px;
+  font-weight: 400;
+  font-family: 'Nunito';
+  color: $dark-gray;
+}
+
+.aboutHeader {
+  padding-top: 3%;
+  padding-bottom: 3%;
+  font-size: 48px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.aboutContent {
+  display: flex;
+  flex-direction: row;
+  gap: 2%;
+  flex: 1;
+}
+
+.aboutImageContainer {
+  position: relative;
+  width: 50%;
+  height: 512px;
+}
+
+.aboutImage {
+  border-radius: 16px;
+}
+
+.aboutText {
+  width: 50%;
+
+  & p {
+    padding-bottom: 3%;
+  }
+}

@@ -1,0 +1,236 @@
+.footer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background-color: $blue;
+}
+
+.footerContainer {
+  color: #ffffff;
+  display: grid;
+  gap: 2%;
+  padding: 64px 0;
+  max-width: 1600px;
+
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 100%;
+  min-height: 808px;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Nunito';
+}
+
+.footerLeft {
+  display: flex;
+  grid-column: 1;
+  flex-direction: column;
+  height: 100%;
+
+  & > p {
+    margin-top: auto;
+    font-size: 32px;
+    font-weight: 600;
+  }
+}
+
+.footerLogo {
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+.footerContacts {
+  display: flex;
+  flex-direction: column;
+  margin-top: 30%;
+
+  & > a {
+    margin-bottom: 10%;
+    text-decoration: none;
+    font-weight: 400;
+    font-family: 'Nunito';
+    color: #ffffff;
+    cursor: pointer;
+  }
+}
+
+.socialMedia {
+  display: flex;
+  margin-top: 5%;
+
+  & > a {
+    margin-right: 16px;
+    cursor: pointer;
+  }
+}
+
+.socialLogo {
+  display: block;
+  width: 90%;
+  align-self: flex-start;
+  justify-self: start;
+}
+
+.footerCenter {
+  display: flex;
+  grid-column: 2;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  & > div {
+    flex-basis: 50%;
+  }
+}
+
+.footerRight {
+  display: block;
+  grid-column: 3;
+  flex-direction: column;
+}
+
+.footerForm {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 16% 8%;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  color: $dark-gray;
+
+  & > p {
+    margin-bottom: 4%;
+    font-size: 24px;
+  }
+
+  & > label {
+    display: block;
+    margin-top: 4%;
+    font-size: 20px;
+  }
+
+  & > input {
+    display: block;
+    height: 51px;
+    padding: 12px 16px;
+    background-color: #ffffff;
+    border: solid 1px $purple-gray;
+    border-radius: 8px;
+    font-size: 20px;
+    color: $dark-gray;
+
+    &:focus {
+      outline: 1px solid $blue;
+    }
+
+    &::placeholder {
+      color: $purple-gray;
+      font-size: 20px;
+    }
+  }
+
+  & > textarea {
+    height: 100px;
+    padding: 12px 16px;
+    background-color: #ffffff;
+    border: solid 1px $purple-gray;
+    border-radius: 8px;
+    font-size: 20px;
+
+    color: #1e1e1e;
+
+    &:focus {
+      outline: 1px solid $blue;
+    }
+
+    &::placeholder {
+      color: #d9d9d9;
+      font-size: 20px;
+    }
+  }
+
+  & button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 78px;
+    margin: 6% 0;
+    padding: 3% 0;
+    border: none;
+    border-radius: 8px;
+    background-color: $blue;
+    font-family: 'Nunito';
+    font-weight: 600;
+    font-size: 32px;
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .errorMesage {
+    margin-bottom: -3%;
+    font-size: 16px;
+    color: $red;
+  }
+
+  .checkmark {
+    width: 25px;
+    height: 25px;
+    background-color: white;
+    border: 1px solid $purple-gray;
+    border-radius: 6px;
+    display: block;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .footerCheckbox {
+    display: inline-block;
+    position: relative;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+
+    .footerCheckboxInput {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .footerCheckboxInput:checked ~ .checkmark {
+      background-color: $blue;
+      border: none;
+    }
+
+    .footerCheckboxInput:checked ~ .checkmark::after {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      width: 6px;
+      height: 12px;
+      border: solid $purple-gray;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.agreementContainer {
+  display: flex;
+  align-items: center;
+}
+
+.footerAgreement {
+  margin-left: 13px;
+  font-size: 16px;
+  color: #b3b3b3;
+
+  & > a {
+    color: #04006f;
+    cursor: pointer;
+  }
+}
