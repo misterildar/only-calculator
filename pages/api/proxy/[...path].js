@@ -17,8 +17,14 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log('Proxy response:', response.status, data);
-    res.status(response.status).json(data);
+    console.log('Proxy response:', response.status, response.statusText, data);
+
+    // Передаем все заголовки ответа
+    res.status(response.status);
+    if (response.headers.get('content-type')) {
+      res.setHeader('content-type', response.headers.get('content-type'));
+    }
+    res.json(data);
   } catch (error) {
     console.error('Proxy error:', error);
     res.status(500).json({ error: 'Proxy request failed', targetUrl, path, query });

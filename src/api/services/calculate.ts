@@ -4,7 +4,7 @@ import type { CalculateRequest, CalculateResponse } from '../types';
 export const getCalculationData = async (data: CalculateRequest): Promise<CalculateResponse> => {
   const response = await apiClient.post<CalculateResponse>('v1/calculate', data);
 
-  if (response.status === 200 && response.statusText === 'OK') {
+  if (response.status === 200) {
     if (!response.data.results || !Array.isArray(response.data.results)) {
       throw new Error('Invalid response structure: missing results array');
     }
