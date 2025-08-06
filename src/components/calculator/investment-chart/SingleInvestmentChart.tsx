@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useId } from 'react';
 import { ServerResultItem } from '../types';
 import styles from './InvestmentChart.module.scss';
 
@@ -26,99 +26,90 @@ interface SingleInvestmentChartProps {
 }
 
 export const SingleInvestmentChart = ({ data }: SingleInvestmentChartProps) => {
-  const chartId = useMemo(() => `single-chart-${Math.random().toString(36).slice(2, 9)}`, []);
+  const chartId = useId();
 
   const chartData = useMemo(() => {
     if (!data.length) return null;
 
     const years = data.map((d) => d.year);
-    const fundSizes = data.map((d) => d.fund_size);
+    const cumulativePayments = data.map((d) => d.cumulative_payment);
 
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
     const minValue = Math.max(
       0,
-      Math.min(...fundSizes) - (Math.max(...fundSizes) - Math.min(...fundSizes)) * 0.1
+      Math.min(...cumulativePayments) -
+        (Math.max(...cumulativePayments) - Math.min(...cumulativePayments)) * 0.1
     );
-    const maxValue = Math.max(...fundSizes) + ((Math.max(...fundSizes) - minValue) * 0.1 || 10000);
+    const maxValue =
+      Math.max(...cumulativePayments) +
+      ((Math.max(...cumulativePayments) - minValue) * 0.1 || 10000);
 
-    return { years, fundSizes, minYear, maxYear, minValue, maxValue };
+    return { years, minYear, maxYear, minValue, maxValue };
   }, [data]);
 
-  const yTicks = useMemo(() => {
-    if (!chartData) return [];
-    const { minValue, maxValue } = chartData;
-    return Array.from(
+  const { yTicks, minorYTicks, linePath, areaPath, scaleX, scaleY } = useMemo(() => {
+    if (!chartData)
+      return {
+        yTicks: [],
+        minorYTicks: [],
+        linePath: '',
+        areaPath: '',
+        scaleX: () => 0,
+        scaleY: () => 0,
+      };
+
+    const { minYear, maxYear, minValue, maxValue } = chartData;
+    const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
+    const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
+
+    // Scaling functions
+    const scaleX = (year: number): number =>
+      ((year - minYear) / (maxYear - minYear || 1)) * chartWidth;
+    const scaleY = (value: number): number =>
+      chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+
+    // Y-axis ticks
+    const yTicks = Array.from(
       { length: CONFIG.tickCount },
       (_, i) => minValue + (i * (maxValue - minValue)) / (CONFIG.tickCount - 1)
     );
-  }, [chartData]);
 
-  const minorYTicks = useMemo(() => {
-    if (!yTicks.length) return [];
-    const minorTicks: number[] = [];
-    const minorCount = 2;
-
+    // Minor ticks
+    const minorYTicks: number[] = [];
     for (let i = 0; i < yTicks.length - 1; i++) {
       const current = yTicks[i];
       const next = yTicks[i + 1];
-
-      for (let j = 1; j <= minorCount; j++) {
-        minorTicks.push(current + ((next - current) * j) / (minorCount + 1));
+      for (let j = 1; j <= 2; j++) {
+        minorYTicks.push(current + ((next - current) * j) / 3);
       }
     }
-    return minorTicks;
-  }, [yTicks]);
 
-  const linePath = useMemo(() => {
-    if (!chartData) return '';
-    const { minYear, maxYear, minValue, maxValue } = chartData;
-    const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
-    const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
-
-    const scaleX = (year: number): number =>
-      ((year - minYear) / (maxYear - minYear || 1)) * chartWidth;
-    const scaleY = (value: number): number =>
-      chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
-
-    return data
+    // Paths
+    const linePath = data
       .map(
-        (item, index) => `${index === 0 ? 'M' : 'L'} ${scaleX(item.year)} ${scaleY(item.fund_size)}`
+        (item, index) =>
+          `${index === 0 ? 'M' : 'L'} ${scaleX(item.year)} ${scaleY(item.cumulative_payment)}`
       )
       .join(' ');
-  }, [data, chartData]);
-
-  const areaPath = useMemo(() => {
-    if (!chartData) return '';
-    const { minYear, maxYear, minValue, maxValue } = chartData;
-    const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
-    const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
-
-    const scaleX = (year: number): number =>
-      ((year - minYear) / (maxYear - minYear || 1)) * chartWidth;
-    const scaleY = (value: number): number =>
-      chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
 
     const topPath = data
-      .map((item) => `${scaleX(item.year)},${scaleY(item.fund_size)}`)
+      .map((item) => `${scaleX(item.year)},${scaleY(item.cumulative_payment)}`)
       .join(' L ');
     const bottomPath = data
       .map((item) => `${scaleX(item.year)},${chartHeight}`)
       .reverse()
       .join(' L ');
-    return `M ${topPath} L ${bottomPath} Z`;
+    const areaPath = `M ${topPath} L ${bottomPath} Z`;
+
+    return { yTicks, minorYTicks, linePath, areaPath, scaleX, scaleY };
   }, [data, chartData]);
 
   if (!chartData) return null;
 
-  const { years, minYear, maxYear, minValue, maxValue } = chartData;
+  const { years } = chartData;
   const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
   const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
-
-  const scaleX = (year: number): number =>
-    ((year - minYear) / (maxYear - minYear || 1)) * chartWidth;
-  const scaleY = (value: number): number =>
-    chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
 
   return (
     <div className={styles.chartContainer}>
@@ -196,7 +187,7 @@ export const SingleInvestmentChart = ({ data }: SingleInvestmentChartProps) => {
             <circle
               key={`point-${item.year}`}
               cx={scaleX(item.year)}
-              cy={scaleY(item.fund_size)}
+              cy={scaleY(item.cumulative_payment)}
               r={CONFIG.point}
               fill={COLORS.primary}
               stroke='white'
@@ -230,11 +221,11 @@ export const SingleInvestmentChart = ({ data }: SingleInvestmentChartProps) => {
             ))}
         </g>
 
-        <g transform={`translate(${CONFIG.width / 2 - 60}, ${CONFIG.height - 10})`}>
+        <g transform={`translate(${CONFIG.width / 2 - 80}, ${CONFIG.height - 10})`}>
           <line x1={-8} y1={0} x2={8} y2={0} stroke={COLORS.primary} strokeWidth={CONFIG.stroke} />
           <circle cx={0} cy={0} r={CONFIG.point} fill={COLORS.primary} />
           <text x={15} y={4} fontSize='14' fill={COLORS.text} fontFamily={FONT_FAMILY}>
-            Fund Size
+            Cumulative Payments
           </text>
         </g>
       </svg>
