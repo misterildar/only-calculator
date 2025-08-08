@@ -22,7 +22,15 @@ const COLORS = {
 const FONT_FAMILY = 'Nunito';
 
 const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
-const formatNumber = (value: number): string => Math.round(value).toLocaleString();
+
+// Функция для корректировки данных API (убираем лишние нули)
+const adjustValue = (value: number, key: string): number => {
+  // Для денежных значений делим на 1000
+  if (key === 'fund_size' || key === 'cumulative_payment' || key === 'payment') {
+    return value / 1000;
+  }
+  return value;
+};
 
 interface MultipleInvestmentChartsProps {
   data: CalculateResponse['results'];
@@ -48,7 +56,7 @@ const Chart = ({
     if (!data.length) return null;
 
     const years = data.map((d) => d.year);
-    const values = data.map((d) => d[valueKey] as number);
+    const values = data.map((d) => adjustValue(d[valueKey] as number, valueKey as string));
 
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
@@ -82,12 +90,15 @@ const Chart = ({
     const linePath = data
       .map(
         (item, index) =>
-          `${index === 0 ? 'M' : 'L'} ${scaleX(item.year)} ${scaleY(item[valueKey] as number)}`
+          `${index === 0 ? 'M' : 'L'} ${scaleX(item.year)} ${scaleY(adjustValue(item[valueKey] as number, valueKey as string))}`
       )
       .join(' ');
 
     const topPath = data
-      .map((item) => `${scaleX(item.year)},${scaleY(item[valueKey] as number)}`)
+      .map(
+        (item) =>
+          `${scaleX(item.year)},${scaleY(adjustValue(item[valueKey] as number, valueKey as string))}`
+      )
       .join(' L ');
     const bottomPath = data
       .map((item) => `${scaleX(item.year)},${chartHeight}`)
@@ -169,7 +180,7 @@ const Chart = ({
               <circle
                 key={`point-${item.year}`}
                 cx={scaleX(item.year)}
-                cy={scaleY(item[valueKey] as number)}
+                cy={scaleY(adjustValue(item[valueKey] as number, valueKey as string))}
                 r={CONFIG.point}
                 fill={color}
                 stroke='white'
@@ -233,20 +244,30 @@ export const MultipleInvestmentCharts = ({ data, summary }: MultipleInvestmentCh
           <div className={styles.summaryGrid}>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Общая инвестиция</div>
-              <div className={styles.summaryValue}>{formatCurrency(summary.total_investment)}</div>
+              <div className={styles.summaryValue}>
+                {formatCurrency(summary.total_investment / 1000)}
+              </div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Общие выплаты</div>
-              <div className={styles.summaryValue}>{formatCurrency(summary.total_payments)}</div>
+              <div className={styles.summaryValue}>
+                {formatCurrency(summary.total_payments / 1000)}
+              </div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Максимальная выплата</div>
-              <div className={styles.summaryValue}>{formatCurrency(summary.max_payment)}</div>
+              <div className={styles.summaryValue}>
+                {formatCurrency(summary.max_payment / 1000)}
+              </div>
             </div>
             <div className={styles.summaryCard}>
               <div className={styles.summaryLabel}>Эффективность</div>
               <div className={styles.summaryValue}>
-                {((summary.total_payments / summary.total_investment) * 100).toFixed(1)}%
+                {(
+                  (summary.total_payments / 1000 / (summary.total_investment / 1000)) *
+                  100
+                ).toFixed(1)}
+                %
               </div>
             </div>
           </div>
