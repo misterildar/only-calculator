@@ -1,4 +1,4 @@
-import { useMemo, useId } from 'react';
+import { useMemo, useId, useState } from 'react';
 import type { CalculateResponse } from '@/api';
 import styles from './InvestmentChart.module.scss';
 
@@ -23,13 +23,9 @@ const FONT_FAMILY = 'Nunito';
 
 const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
 
-// Функция для корректировки данных API (убираем лишние нули)
+// Функция для корректировки данных API - возвращаем оригинальные значения
 const adjustValue = (value: number, key: string): number => {
-  // Для денежных значений делим на 1000
-  if (key === 'fund_size' || key === 'cumulative_payment' || key === 'payment') {
-    return value / 1000;
-  }
-  return value;
+  return value; // Возвращаем как есть - это правильные значения для пенсионного фонда
 };
 
 interface MultipleInvestmentChartsProps {
@@ -51,6 +47,12 @@ const Chart = ({
   formatter: (value: number) => string;
 }) => {
   const chartId = useId();
+  const [tooltip, setTooltip] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    data: { year: number; value: number };
+  } | null>(null);
 
   const chartData = useMemo(() => {
     if (!data.length) return null;
@@ -177,15 +179,44 @@ const Chart = ({
             />
 
             {data.map((item) => (
-              <circle
-                key={`point-${item.year}`}
-                cx={scaleX(item.year)}
-                cy={scaleY(adjustValue(item[valueKey] as number, valueKey as string))}
-                r={CONFIG.point}
-                fill={color}
-                stroke='white'
-                strokeWidth={1}
-              />
+              <g key={`point-group-${item.year}`}>
+                {/* Видимая точка */}
+                <circle
+                  cx={scaleX(item.year)}
+                  cy={scaleY(adjustValue(item[valueKey] as number, valueKey as string))}
+                  r={CONFIG.point}
+                  fill={color}
+                  stroke='white'
+                  strokeWidth={1}
+                  className={styles.chartPoint}
+                />
+                {/* Невидимая большая область для hover */}
+                <circle
+                  cx={scaleX(item.year)}
+                  cy={scaleY(adjustValue(item[valueKey] as number, valueKey as string))}
+                  r={6}
+                  fill='transparent'
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+                    if (rect) {
+                      setTooltip({
+                        visible: true,
+                        x: rect.left + scaleX(item.year) + CONFIG.pad.l,
+                        y:
+                          rect.top +
+                          scaleY(adjustValue(item[valueKey] as number, valueKey as string)) +
+                          CONFIG.pad.t,
+                        data: {
+                          year: item.year,
+                          value: adjustValue(item[valueKey] as number, valueKey as string),
+                        },
+                      });
+                    }
+                  }}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              </g>
             ))}
 
             {years
@@ -212,6 +243,26 @@ const Chart = ({
               ))}
           </g>
         </svg>
+
+        {tooltip && (
+          <div
+            className={styles.tooltip}
+            style={{
+              position: 'fixed',
+              left: tooltip.x + 10,
+              top: tooltip.y - 10,
+              transform: 'translateY(-100%)',
+              zIndex: 1000,
+            }}
+          >
+            <div className={styles.tooltipContent}>
+              <div className={styles.tooltipYear}>Year: {tooltip.data.year}</div>
+              <div className={styles.tooltipValue}>
+                {title.includes('Fund') ? 'Fund Size' : 'Payment'}: {formatter(tooltip.data.value)}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -225,7 +276,7 @@ export const MultipleInvestmentCharts = ({ data, summary }: MultipleInvestmentCh
       <Chart
         data={data}
         valueKey='fund_size'
-        title='Размер инвестиционного фонда'
+        title='Investment Fund Size'
         color={COLORS.primary}
         formatter={formatCurrency}
       />
@@ -233,42 +284,34 @@ export const MultipleInvestmentCharts = ({ data, summary }: MultipleInvestmentCh
       <Chart
         data={data}
         valueKey='cumulative_payment'
-        title='Ваши накопленные выплаты'
+        title='Your Cumulative Payments'
         color={COLORS.secondary}
         formatter={formatCurrency}
       />
 
       {summary && (
         <div className={styles.summarySection}>
-          <h3 className={styles.chartTitle}>Итоговые показатели</h3>
+          <h3 className={styles.chartTitle}>Summary Results</h3>
           <div className={styles.summaryGrid}>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Общая инвестиция</div>
-              <div className={styles.summaryValue}>
-                {formatCurrency(summary.total_investment / 1000)}
-              </div>
+              <div className={styles.summaryLabel}>Total Investment</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.total_investment)}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Общие выплаты</div>
-              <div className={styles.summaryValue}>
-                {formatCurrency(summary.total_payments / 1000)}
-              </div>
+              <div className={styles.summaryLabel}>Total Payments</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.total_payments)}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Максимальная выплата</div>
-              <div className={styles.summaryValue}>
-                {formatCurrency(summary.max_payment / 1000)}
-              </div>
+              <div className={styles.summaryLabel}>Maximum Payment</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.max_payment)}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Эффективность</div>
-              <div className={styles.summaryValue}>
-                {(
-                  (summary.total_payments / 1000 / (summary.total_investment / 1000)) *
-                  100
-                ).toFixed(1)}
-                %
-              </div>
+              <div className={styles.summaryLabel}>Years with Payments</div>
+              <div className={styles.summaryValue}>{summary.years_with_payments}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Final Fund Size</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.final_fund_size)}</div>
             </div>
           </div>
         </div>
