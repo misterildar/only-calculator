@@ -1,15 +1,11 @@
 import { CalculatorIcon, LoadingSpinner, Button } from '@/ui';
-import { SingleInvestmentChart } from '../investment-chart';
+import { MultipleInvestmentCharts } from '../investment-chart/MultipleInvestmentCharts';
 import { CALCULATOR_TEXTS } from '../utils/constants';
 
 import { CalculatorContentProps } from '../types';
 import styles from './CalculatorContent.module.scss';
 
-export const CalculatorContent = ({
-  isLoading,
-  serverChartData,
-  error,
-}: CalculatorContentProps) => {
+export const CalculatorContent = ({ isLoading, serverResponse, error }: CalculatorContentProps) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -25,10 +21,10 @@ export const CalculatorContent = ({
     );
   }
 
-  if (serverChartData.length > 0) {
+  if (serverResponse && serverResponse.results.length > 0) {
     return (
       <div className={styles.result}>
-        <SingleInvestmentChart data={serverChartData} />
+        <MultipleInvestmentCharts data={serverResponse.results} summary={serverResponse.summary} />
         <Button variant='secondary' text='Request expert advise' className={styles.button} />
       </div>
     );

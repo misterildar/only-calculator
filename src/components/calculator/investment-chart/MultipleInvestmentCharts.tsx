@@ -1,0 +1,257 @@
+import { useMemo, useId } from 'react';
+import type { CalculateResponse } from '@/api';
+import styles from './InvestmentChart.module.scss';
+
+const CONFIG = {
+  width: 860,
+  height: 400,
+  pad: { t: 10, r: 40, b: 60, l: 150 },
+  tickCount: 6,
+  stroke: 2,
+  point: 3,
+} as const;
+
+const COLORS = {
+  primary: '#4CAF50',
+  secondary: '#2196F3',
+  tertiary: '#FF9800',
+  grid: '#E0E0E0',
+  text: '#666',
+} as const;
+
+const FONT_FAMILY = 'Nunito';
+
+const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
+const formatNumber = (value: number): string => Math.round(value).toLocaleString();
+
+interface MultipleInvestmentChartsProps {
+  data: CalculateResponse['results'];
+  summary?: CalculateResponse['summary'];
+}
+
+const Chart = ({
+  data,
+  valueKey,
+  title,
+  color,
+  formatter,
+}: {
+  data: CalculateResponse['results'];
+  valueKey: keyof CalculateResponse['results'][0];
+  title: string;
+  color: string;
+  formatter: (value: number) => string;
+}) => {
+  const chartId = useId();
+
+  const chartData = useMemo(() => {
+    if (!data.length) return null;
+
+    const years = data.map((d) => d.year);
+    const values = data.map((d) => d[valueKey] as number);
+
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const minValue = Math.max(
+      0,
+      Math.min(...values) - (Math.max(...values) - Math.min(...values)) * 0.1
+    );
+    const maxValue = Math.max(...values) + ((Math.max(...values) - minValue) * 0.1 || 10000);
+
+    return { years, minYear, maxYear, minValue, maxValue, values };
+  }, [data, valueKey]);
+
+  const { yTicks, linePath, areaPath, scaleX, scaleY } = useMemo(() => {
+    if (!chartData)
+      return { yTicks: [], linePath: '', areaPath: '', scaleX: () => 0, scaleY: () => 0 };
+
+    const { minYear, maxYear, minValue, maxValue, values } = chartData;
+    const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
+    const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
+
+    const scaleX = (year: number): number =>
+      ((year - minYear) / (maxYear - minYear || 1)) * chartWidth;
+    const scaleY = (value: number): number =>
+      chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+
+    const yTicks = Array.from(
+      { length: CONFIG.tickCount },
+      (_, i) => minValue + (i * (maxValue - minValue)) / (CONFIG.tickCount - 1)
+    );
+
+    const linePath = data
+      .map(
+        (item, index) =>
+          `${index === 0 ? 'M' : 'L'} ${scaleX(item.year)} ${scaleY(item[valueKey] as number)}`
+      )
+      .join(' ');
+
+    const topPath = data
+      .map((item) => `${scaleX(item.year)},${scaleY(item[valueKey] as number)}`)
+      .join(' L ');
+    const bottomPath = data
+      .map((item) => `${scaleX(item.year)},${chartHeight}`)
+      .reverse()
+      .join(' L ');
+    const areaPath = `M ${topPath} L ${bottomPath} Z`;
+
+    return { yTicks, linePath, areaPath, scaleX, scaleY };
+  }, [data, chartData, valueKey]);
+
+  if (!chartData) return null;
+
+  const { years } = chartData;
+  const chartWidth = CONFIG.width - CONFIG.pad.l - CONFIG.pad.r;
+  const chartHeight = CONFIG.height - CONFIG.pad.t - CONFIG.pad.b;
+
+  return (
+    <div className={styles.chartSection}>
+      <h3 className={styles.chartTitle}>{title}</h3>
+      <div className={styles.chartContainer}>
+        <svg width={CONFIG.width} height={CONFIG.height} style={{ maxWidth: '100%' }}>
+          <defs>
+            <linearGradient id={`gradient-${chartId}`} x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='0%' stopColor={color} stopOpacity='0.3' />
+              <stop offset='100%' stopColor={color} stopOpacity='0.1' />
+            </linearGradient>
+          </defs>
+
+          <g transform={`translate(${CONFIG.pad.l}, ${CONFIG.pad.t})`}>
+            {yTicks.map((tick) => (
+              <g key={`major-${tick}`}>
+                <line
+                  x1={0}
+                  y1={scaleY(tick)}
+                  x2={chartWidth}
+                  y2={scaleY(tick)}
+                  stroke={COLORS.grid}
+                  strokeWidth={1}
+                />
+                <text
+                  x={-10}
+                  y={scaleY(tick)}
+                  textAnchor='end'
+                  dominantBaseline='middle'
+                  fontSize='14'
+                  fill={COLORS.text}
+                  fontFamily={FONT_FAMILY}
+                >
+                  {formatter(tick)}
+                </text>
+              </g>
+            ))}
+
+            {years.map((year) => (
+              <line
+                key={`grid-${year}`}
+                x1={scaleX(year)}
+                y1={0}
+                x2={scaleX(year)}
+                y2={chartHeight}
+                stroke={COLORS.grid}
+                strokeWidth={1}
+                opacity={0.3}
+              />
+            ))}
+
+            {data.length > 1 && <path d={areaPath} fill={`url(#gradient-${chartId})`} />}
+
+            <path
+              d={linePath}
+              fill='none'
+              stroke={color}
+              strokeWidth={CONFIG.stroke}
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+
+            {data.map((item) => (
+              <circle
+                key={`point-${item.year}`}
+                cx={scaleX(item.year)}
+                cy={scaleY(item[valueKey] as number)}
+                r={CONFIG.point}
+                fill={color}
+                stroke='white'
+                strokeWidth={1}
+              />
+            ))}
+
+            {years
+              .filter((_, index) => {
+                const totalYears = years.length;
+                let interval = 1;
+                if (totalYears > 40) interval = 10;
+                else if (totalYears > 20) interval = 5;
+                else if (totalYears > 10) interval = 2;
+                return index % interval === 0 || index === totalYears - 1;
+              })
+              .map((year) => (
+                <text
+                  key={`label-${year}`}
+                  x={scaleX(year)}
+                  y={chartHeight + 20}
+                  textAnchor='middle'
+                  fontSize='12'
+                  fill={COLORS.text}
+                  fontFamily={FONT_FAMILY}
+                >
+                  {year}
+                </text>
+              ))}
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+export const MultipleInvestmentCharts = ({ data, summary }: MultipleInvestmentChartsProps) => {
+  if (!data.length) return null;
+
+  return (
+    <div className={styles.multipleChartsContainer}>
+      <Chart
+        data={data}
+        valueKey='fund_size'
+        title='Размер инвестиционного фонда'
+        color={COLORS.primary}
+        formatter={formatCurrency}
+      />
+
+      <Chart
+        data={data}
+        valueKey='cumulative_payment'
+        title='Ваши накопленные выплаты'
+        color={COLORS.secondary}
+        formatter={formatCurrency}
+      />
+
+      {summary && (
+        <div className={styles.summarySection}>
+          <h3 className={styles.chartTitle}>Итоговые показатели</h3>
+          <div className={styles.summaryGrid}>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Общая инвестиция</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.total_investment)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Общие выплаты</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.total_payments)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Максимальная выплата</div>
+              <div className={styles.summaryValue}>{formatCurrency(summary.max_payment)}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Эффективность</div>
+              <div className={styles.summaryValue}>
+                {((summary.total_payments / summary.total_investment) * 100).toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

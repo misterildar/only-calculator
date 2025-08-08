@@ -29,9 +29,11 @@ export type DropdownProps<T extends FieldValues = FieldValues> = {
   placeholder?: string;
 };
 
+import type { CalculateResponse } from '@/api';
+
 export interface CalculatorContentProps {
   isLoading: boolean;
-  serverChartData: ServerResultItem[];
+  serverResponse: CalculateResponse | null;
   error?: string | null;
 }
 

@@ -8,7 +8,7 @@ import { CalculatorContent } from './calculator-content';
 import styles from './Calculator.module.scss';
 
 export const Calculator = () => {
-  const { isLoading, error, serverChartData, handleSubmit } = useCalculatorSubmit();
+  const { isLoading, error, serverResponse, handleSubmit } = useCalculatorSubmit();
 
   return (
     <section id='calculator' className={styles.section}>
@@ -16,11 +16,7 @@ export const Calculator = () => {
       <div className={styles.separator}>
         <CalculatorForm onSubmit={handleSubmit} />
         <div className={styles.container}>
-          <CalculatorContent
-            isLoading={isLoading}
-            serverChartData={serverChartData}
-            error={error}
-          />
+          <CalculatorContent isLoading={isLoading} serverResponse={serverResponse} error={error} />
         </div>
       </div>
     </section>

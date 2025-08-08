@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { getCalculationData } from '@/api';
-import type { CalculateRequest } from '@/api';
-import { CalculatorFormData, ServerResultItem } from '../types';
+import type { CalculateRequest, CalculateResponse } from '@/api';
+import { CalculatorFormData } from '../types';
 
 export const useCalculatorSubmit = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  const [serverChartData, setServerChartData] = useState<ServerResultItem[]>([]);
+  const [serverResponse, setServerResponse] = useState<CalculateResponse | null>(null);
 
   const handleSubmit = async (data: CalculatorFormData) => {
     setIsLoading(true);
@@ -22,7 +22,7 @@ export const useCalculatorSubmit = () => {
         target_age: 120,
       };
       const response = await getCalculationData(apiData);
-      setServerChartData(response.results);
+      setServerResponse(response);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Calculation failed';
       setError(errorMessage);
@@ -34,7 +34,7 @@ export const useCalculatorSubmit = () => {
   return {
     isLoading,
     error,
-    serverChartData,
+    serverResponse,
     handleSubmit,
   };
 };
